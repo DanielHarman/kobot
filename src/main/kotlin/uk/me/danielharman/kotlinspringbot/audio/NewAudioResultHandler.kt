@@ -48,6 +48,7 @@ class NewAudioResultHandler(private val voiceChannel: VoiceChannel?, private val
                 channel.guild.audioManager.openAudioConnection(voiceChannel)
             } catch (e: InsufficientPermissionException) {
                 ApplicationLogger.logger.error("Bot encountered an exception when attempting to join a voice channel ${e.message}")
+                return
             }
         }
         musicManager.scheduler.queue(track)

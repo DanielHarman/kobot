@@ -23,12 +23,10 @@ import uk.me.danielharman.kotlinspringbot.services.XkcdService
 
 @Component
 @Scope("prototype")
-class DiscordActor(val guildService: GuildService,
-                   val adminCommandService: AdminCommandService,
-                   val commandService: CommandService,
-                   val memeService: MemeService,
-                   val xkcdService: XkcdService,
-                   val properties: KotlinBotProperties
+class DiscordActor(private val guildService: GuildService,
+                   private val xkcdService: XkcdService,
+                   private val messageListener: MessageListener,
+                   private val properties: KotlinBotProperties
 ) : UntypedAbstractActor() {
 
     private lateinit var jda: JDA
@@ -55,7 +53,7 @@ class DiscordActor(val guildService: GuildService,
                 GUILD_EMOJIS,
                 GUILD_MESSAGE_REACTIONS)
                 .setActivity(Activity.of(Activity.ActivityType.DEFAULT, "${properties.commandPrefix}help"))
-                .addEventListeners(MessageListener(guildService, adminCommandService, commandService, properties, memeService))
+                .addEventListeners(messageListener)
 
         jda = builder.build().awaitReady()
     }

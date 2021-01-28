@@ -10,24 +10,24 @@ import net.dv8tion.jda.api.events.message.guild.GuildMessageReceivedEvent
 import net.dv8tion.jda.api.events.message.react.MessageReactionAddEvent
 import net.dv8tion.jda.api.events.message.react.MessageReactionRemoveEvent
 import net.dv8tion.jda.api.hooks.ListenerAdapter
+import org.springframework.stereotype.Component
 import uk.me.danielharman.kotlinspringbot.ApplicationLogger.logger
 import uk.me.danielharman.kotlinspringbot.KotlinBotProperties
 import uk.me.danielharman.kotlinspringbot.helpers.EmojiCodes
 import uk.me.danielharman.kotlinspringbot.helpers.JDAHelperFunctions.getAuthorIdFromMessageId
 import uk.me.danielharman.kotlinspringbot.models.Meme
-import uk.me.danielharman.kotlinspringbot.services.AdminCommandService
-import uk.me.danielharman.kotlinspringbot.services.CommandService
-import uk.me.danielharman.kotlinspringbot.services.GuildService
-import uk.me.danielharman.kotlinspringbot.services.MemeService
+import uk.me.danielharman.kotlinspringbot.services.*
 
-
+@Component
 class MessageListener(private val guildService: GuildService,
                       private val adminCommandService: AdminCommandService,
                       private val commandService: CommandService,
                       private val properties: KotlinBotProperties,
                       private val memeService: MemeService,
-                      playerManager: AudioPlayerManager = DefaultAudioPlayerManager()) : ListenerAdapter() {
+                      private val mediaCommandService: MediaCommandService
+                      ): ListenerAdapter() {
     init {
+        val playerManager: AudioPlayerManager = DefaultAudioPlayerManager()
         AudioSourceManagers.registerRemoteSources(playerManager)
         AudioSourceManagers.registerLocalSource(playerManager)
     }
@@ -145,6 +145,10 @@ class MessageListener(private val guildService: GuildService,
                 if (!isDeafened)
                     runCommand(event)
             }
+            message.contentStripped.startsWith(properties.mediaCommandPrefix) -> {
+                if (!isDeafened)
+                    runMediaCommand(event)
+            }
             message.contentStripped.startsWith(properties.privilegedCommandPrefix) -> {
                 runAdminCommand(event)
             }
@@ -185,6 +189,18 @@ class MessageListener(private val guildService: GuildService,
 
         val cmd = event.message.contentStripped.split(" ")[0].removePrefix(properties.commandPrefix)
         val command = commandService.getCommand(cmd)
+        command.execute(event)
+    }
+
+    private fun runMediaCommand(event: GuildMessageReceivedEvent) {
+
+        if (event.author.id == event.jda.selfUser.id || event.author.isBot) {
+            logger.info("Not running command as author is me or a bot")
+            return
+        }
+
+        val cmd = event.message.contentStripped.split(" ")[0].removePrefix(properties.mediaCommandPrefix)
+        val command = mediaCommandService.getCommand(cmd)
         command.execute(event)
     }
 

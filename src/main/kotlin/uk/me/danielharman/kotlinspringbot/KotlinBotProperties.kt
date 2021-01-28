@@ -8,6 +8,7 @@ import org.springframework.boot.context.properties.ConstructorBinding;
 data class KotlinBotProperties(
         var commandPrefix: String,
         var privilegedCommandPrefix: String,
+        var mediaCommandPrefix: String,
         var primaryPrivilegedUserId: String,
         var token: String
 )
