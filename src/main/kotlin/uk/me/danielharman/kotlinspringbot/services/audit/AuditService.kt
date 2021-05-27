@@ -19,7 +19,7 @@ class AuditService(private val auditRepository: AuditRepository) {
     fun getAudit(id: String): OperationResult<AuditItem, String> {
         val findById = auditRepository.findById(id)
         return if (findById.isEmpty)
-            Failure("Audit not found")
+            Failure("The Audit is not found")
         else
             Success(findById.get())
     }
