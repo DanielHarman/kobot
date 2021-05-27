@@ -33,7 +33,7 @@ class AuditServiceTest(
         assertThat(
             findAll, containsInAnyOrder(
                 allOf(
-                    hasProperty("discordId", equalTo("123")),
+                    hasProperty("discordId", equalTo("1234")),
                     hasProperty("administratorId", equalTo("123")),
                     hasProperty("action", equalTo("action"))
                 )
