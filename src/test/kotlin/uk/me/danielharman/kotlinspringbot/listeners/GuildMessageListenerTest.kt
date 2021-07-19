@@ -18,6 +18,7 @@ import uk.me.danielharman.kotlinspringbot.factories.CommandFactory
 import uk.me.danielharman.kotlinspringbot.factories.ModeratorCommandFactory
 import uk.me.danielharman.kotlinspringbot.helpers.Success
 import uk.me.danielharman.kotlinspringbot.models.SpringGuild
+import uk.me.danielharman.kotlinspringbot.services.ChatActionService
 import uk.me.danielharman.kotlinspringbot.services.DiscordActionService
 import uk.me.danielharman.kotlinspringbot.services.SpringGuildService
 import uk.me.danielharman.kotlinspringbot.services.MemeService
@@ -47,6 +48,9 @@ internal class GuildMessageListenerTest {
 
     @Mock
     private lateinit var discordService: DiscordActionService
+
+    @Mock
+    private lateinit var chatActionService: ChatActionService
 
     @Test
     fun onGuildJoin() {
