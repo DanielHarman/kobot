@@ -27,6 +27,8 @@ import uk.me.danielharman.kotlinspringbot.helpers.Failure
 import uk.me.danielharman.kotlinspringbot.helpers.Success
 import uk.me.danielharman.kotlinspringbot.mappers.toMessageEvent
 import uk.me.danielharman.kotlinspringbot.events.DiscordMessageEvent
+import uk.me.danielharman.kotlinspringbot.models.ChatAction
+import uk.me.danielharman.kotlinspringbot.services.ChatActionService
 import uk.me.danielharman.kotlinspringbot.services.DiscordActionService
 import uk.me.danielharman.kotlinspringbot.services.SpringGuildService
 import uk.me.danielharman.kotlinspringbot.services.MemeService
@@ -40,7 +42,8 @@ class GuildMessageListener(
     private val commandFactory: CommandFactory,
     private val properties: KotlinBotProperties,
     private val memeService: MemeService,
-    private val discordService: DiscordActionService
+    private val discordService: DiscordActionService,
+    private val chatActionService: ChatActionService
 ) : ListenerAdapter() {
 
     private val playerManager: AudioPlayerManager = DefaultAudioPlayerManager()
@@ -266,8 +269,19 @@ class GuildMessageListener(
                     .split(" ")
                     .filter { s -> s.isNotBlank() }
 
-                if (!isDeafened && words.size == 1 && words[0] == "lol") {
-                    event.message.addReaction(EmojiCodes.Rofl).queue()
+                if (!isDeafened) {
+                    val actions = chatActionService.getActions(guild.id)
+                    if(actions is Success){
+                        for (action in actions.value){
+                            if(action.match(message.contentStripped)){
+                                when(action.action){
+                                    ChatAction.Action.Reply -> message.channel.sendMessage(action.actionValue).queue()
+                                    ChatAction.Action.React -> message.addReaction(action.actionValue).queue()
+                                    ChatAction.Action.Delete -> message.delete().queue()
+                                }
+                            }
+                        }
+                    }
                 }
 
                 springGuildService.updateUserCount(guild.id, author.id, words.size)
