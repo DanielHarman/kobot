@@ -6,7 +6,7 @@ import net.dv8tion.jda.api.entities.TextChannel
 import org.joda.time.DateTime
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
-import uk.me.danielharman.kotlinspringbot.KotlinBotProperties
+import uk.me.danielharman.kotlinspringbot.properties.DiscordProperties
 import uk.me.danielharman.kotlinspringbot.command.interfaces.ISlashCommand
 import uk.me.danielharman.kotlinspringbot.helpers.Embeds
 import uk.me.danielharman.kotlinspringbot.helpers.Failure
@@ -21,7 +21,7 @@ import uk.me.danielharman.kotlinspringbot.objects.DiscordObject
 class DiscordService(
     private val springGuildService: SpringGuildService,
     private val xkcdService: XkcdService,
-    private val properties: KotlinBotProperties,
+    private val properties: DiscordProperties,
     private val commands: List<ISlashCommand>
 ) {
 

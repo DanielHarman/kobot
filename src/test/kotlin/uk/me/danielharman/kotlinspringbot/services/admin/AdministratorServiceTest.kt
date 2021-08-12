@@ -1,6 +1,5 @@
 package uk.me.danielharman.kotlinspringbot.services.admin
 
-import io.kotest.assertions.fail
 import net.dv8tion.jda.api.entities.Guild
 import net.dv8tion.jda.api.entities.Member
 import net.dv8tion.jda.api.entities.User
@@ -15,7 +14,7 @@ import org.springframework.boot.context.properties.EnableConfigurationProperties
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.data.mongodb.core.MongoOperations
 import org.springframework.test.context.ActiveProfiles
-import uk.me.danielharman.kotlinspringbot.KotlinBotProperties
+import uk.me.danielharman.kotlinspringbot.properties.DiscordProperties
 import uk.me.danielharman.kotlinspringbot.helpers.*
 import uk.me.danielharman.kotlinspringbot.models.SpringGuild
 import uk.me.danielharman.kotlinspringbot.models.admin.Administrator
@@ -26,7 +25,7 @@ import uk.me.danielharman.kotlinspringbot.services.SpringGuildService
 import java.util.*
 
 @SpringBootTest
-@EnableConfigurationProperties(value = [KotlinBotProperties::class])
+@EnableConfigurationProperties(value = [DiscordProperties::class])
 @ActiveProfiles("test")
 internal class AdministratorServiceTest {
 
@@ -43,7 +42,7 @@ internal class AdministratorServiceTest {
     lateinit var discordService: DiscordService
 
     @Mock
-    lateinit var properties: KotlinBotProperties
+    lateinit var properties: DiscordProperties
 
     @Mock
     lateinit var mongoOperations: MongoOperations

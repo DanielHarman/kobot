@@ -17,7 +17,7 @@ import net.dv8tion.jda.api.hooks.ListenerAdapter
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Component
-import uk.me.danielharman.kotlinspringbot.KotlinBotProperties
+import uk.me.danielharman.kotlinspringbot.properties.DiscordProperties
 import uk.me.danielharman.kotlinspringbot.helpers.EmojiCodes
 import uk.me.danielharman.kotlinspringbot.helpers.JDAHelperFunctions.getAuthorIdFromMessageId
 import uk.me.danielharman.kotlinspringbot.models.Meme
@@ -38,7 +38,7 @@ class GuildMessageListener(
     private val springGuildService: SpringGuildService,
     private val moderatorCommandFactory: ModeratorCommandFactory,
     private val commandFactory: CommandFactory,
-    private val properties: KotlinBotProperties,
+    private val properties: DiscordProperties,
     private val memeService: MemeService,
     private val discordService: DiscordActionService
 ) : ListenerAdapter() {
@@ -221,9 +221,6 @@ class GuildMessageListener(
 
         logger.debug("[${guild.name}] #${event.channel.name} <${member?.nickname ?: author.asTag}>: ${message.contentDisplay}")
 
-        if (author.isBot)
-            return
-
         val getDeafenedChannels = springGuildService.getDeafenedChannels(guild.id)
         var deafenedChannels = listOf<String>()
         if (getDeafenedChannels is Success) {
@@ -330,10 +327,6 @@ class GuildMessageListener(
 
         val selfUser = discordService.getSelfUser() as Success
 
-        if (event.author.id == selfUser.value.id || event.author.isBot) {
-            logger.info("Not running command as author is me or a bot")
-            return
-        }
 
         val cmd = event.content.split(" ")[0].removePrefix(properties.commandPrefix)
         val command = commandFactory.getCommand(cmd)

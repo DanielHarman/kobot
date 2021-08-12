@@ -8,7 +8,7 @@ import org.springframework.data.mongodb.core.query.Criteria
 import org.springframework.data.mongodb.core.query.Query
 import org.springframework.data.mongodb.core.query.Update
 import org.springframework.stereotype.Service
-import uk.me.danielharman.kotlinspringbot.KotlinBotProperties
+import uk.me.danielharman.kotlinspringbot.properties.DiscordProperties
 import uk.me.danielharman.kotlinspringbot.helpers.Failure
 import uk.me.danielharman.kotlinspringbot.helpers.OperationResult
 import uk.me.danielharman.kotlinspringbot.helpers.Success
@@ -25,7 +25,7 @@ class AdministratorService(
     private val repository: AdministratorRepository,
     private val springGuildService: SpringGuildService,
     private val discordService: DiscordService,
-    private val properties: KotlinBotProperties,
+    private val properties: DiscordProperties,
     private val mongoOperations: MongoOperations
 ) {
 

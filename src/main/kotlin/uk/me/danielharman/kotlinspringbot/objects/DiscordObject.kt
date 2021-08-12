@@ -10,7 +10,7 @@ import net.dv8tion.jda.api.requests.GatewayIntent
 import org.joda.time.DateTime
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
-import uk.me.danielharman.kotlinspringbot.KotlinBotProperties
+import uk.me.danielharman.kotlinspringbot.properties.DiscordProperties
 import uk.me.danielharman.kotlinspringbot.command.interfaces.ISlashCommand
 import uk.me.danielharman.kotlinspringbot.models.CommandParameter
 import uk.me.danielharman.kotlinspringbot.models.CommandParameter.ParamType
@@ -25,7 +25,7 @@ object DiscordObject {
     var listeners: List<ListenerAdapter> = listOf()
 
     fun init(
-        properties: KotlinBotProperties,
+        properties: DiscordProperties,
         commands: List<ISlashCommand>
     ) {
 

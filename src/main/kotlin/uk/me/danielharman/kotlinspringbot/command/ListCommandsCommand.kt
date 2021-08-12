@@ -1,14 +1,14 @@
 package uk.me.danielharman.kotlinspringbot.command
 
 import org.springframework.stereotype.Component
-import uk.me.danielharman.kotlinspringbot.KotlinBotProperties
+import uk.me.danielharman.kotlinspringbot.properties.DiscordProperties
 import uk.me.danielharman.kotlinspringbot.command.interfaces.Command
 import uk.me.danielharman.kotlinspringbot.command.interfaces.ISlashCommand
 import uk.me.danielharman.kotlinspringbot.helpers.Embeds
 import uk.me.danielharman.kotlinspringbot.events.DiscordMessageEvent
 
 @Component
-class ListCommandsCommand(private val commands: List<Command>, private val properties: KotlinBotProperties) :
+class ListCommandsCommand(private val commands: List<Command>, private val properties: DiscordProperties) :
     Command("help", "Get the list of inbuilt commands"), ISlashCommand {
 
     override fun execute(event: DiscordMessageEvent) {

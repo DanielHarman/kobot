@@ -15,6 +15,7 @@ import uk.me.danielharman.kotlinspringbot.helpers.Success
 import uk.me.danielharman.kotlinspringbot.models.admin.enums.Role
 import uk.me.danielharman.kotlinspringbot.objects.ApplicationInfo
 import uk.me.danielharman.kotlinspringbot.objects.DiscordObject
+import uk.me.danielharman.kotlinspringbot.properties.DiscordProperties
 import uk.me.danielharman.kotlinspringbot.security.DashboardUser
 import uk.me.danielharman.kotlinspringbot.security.DashboardUserRepository
 import uk.me.danielharman.kotlinspringbot.services.*
@@ -31,7 +32,7 @@ class SetupService(
     private val mongoOperations: MongoOperations,
     private val discordService: DiscordService,
     private val buildProperties: BuildProperties,
-    private val kotlinBotProperties: KotlinBotProperties,
+    private val kotlinBotProperties: DiscordProperties,
     private val administratorService: AdministratorService,
     private val listeners: List<ListenerAdapter>
 ) {

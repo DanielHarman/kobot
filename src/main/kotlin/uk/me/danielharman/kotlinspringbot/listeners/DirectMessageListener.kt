@@ -5,13 +5,13 @@ import net.dv8tion.jda.api.hooks.ListenerAdapter
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Component
-import uk.me.danielharman.kotlinspringbot.KotlinBotProperties
+import uk.me.danielharman.kotlinspringbot.properties.DiscordProperties
 import uk.me.danielharman.kotlinspringbot.factories.AdminCommandFactory
 
 @Component
 class DirectMessageListener(
     private val commandFactory: AdminCommandFactory,
-    private val properties: KotlinBotProperties
+    private val properties: DiscordProperties
 ) : ListenerAdapter() {
 
     private val logger: Logger = LoggerFactory.getLogger(this::class.java)

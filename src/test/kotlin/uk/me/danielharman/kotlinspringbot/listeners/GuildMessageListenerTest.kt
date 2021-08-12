@@ -13,7 +13,7 @@ import org.mockito.Mockito.*
 import org.springframework.boot.context.properties.EnableConfigurationProperties
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.test.context.ActiveProfiles
-import uk.me.danielharman.kotlinspringbot.KotlinBotProperties
+import uk.me.danielharman.kotlinspringbot.properties.DiscordProperties
 import uk.me.danielharman.kotlinspringbot.factories.CommandFactory
 import uk.me.danielharman.kotlinspringbot.factories.ModeratorCommandFactory
 import uk.me.danielharman.kotlinspringbot.helpers.Success
@@ -23,7 +23,7 @@ import uk.me.danielharman.kotlinspringbot.services.SpringGuildService
 import uk.me.danielharman.kotlinspringbot.services.MemeService
 
 @SpringBootTest
-@EnableConfigurationProperties(value = [KotlinBotProperties::class])
+@EnableConfigurationProperties(value = [DiscordProperties::class])
 @ActiveProfiles("test")
 internal class GuildMessageListenerTest {
 
@@ -40,7 +40,7 @@ internal class GuildMessageListenerTest {
     private lateinit var commandFactory: CommandFactory
 
     @Mock
-    private lateinit var properties: KotlinBotProperties
+    private lateinit var properties: DiscordProperties
 
     @Mock
     private lateinit var memeService: MemeService

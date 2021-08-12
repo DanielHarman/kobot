@@ -8,12 +8,12 @@ import org.mockito.Mockito.`when`
 import org.springframework.boot.context.properties.EnableConfigurationProperties
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.test.context.ActiveProfiles
-import uk.me.danielharman.kotlinspringbot.KotlinBotProperties
+import uk.me.danielharman.kotlinspringbot.properties.DiscordProperties
 import uk.me.danielharman.kotlinspringbot.events.DiscordChannelMessageEvent
 import uk.me.danielharman.kotlinspringbot.events.DiscordSlashCommandEvent
 
 @SpringBootTest
-@EnableConfigurationProperties(value = [KotlinBotProperties::class])
+@EnableConfigurationProperties(value = [DiscordProperties::class])
 @ActiveProfiles("test")
 internal class PingCommandTest {
 

@@ -7,6 +7,7 @@ plugins {
     id("io.spring.dependency-management") version "1.0.11.RELEASE"
     kotlin("jvm") version "1.5.20"
     kotlin("plugin.spring") version "1.5.20"
+    kotlin("plugin.serialization") version "1.5.20"
     kotlin("kapt") version "1.5.20"
     kotlin("plugin.serialization") version "1.5.20"
     id("me.qoomon.git-versioning") version "4.2.1"
@@ -68,6 +69,10 @@ dependencies {
     implementation("org.jetbrains.kotlin:kotlin-reflect")
     implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8")
     implementation("org.jetbrains.kotlinx:kotlinx-serialization-runtime:1.0-M1-1.4.0-rc") // JVM dependency
+    implementation("io.ktor:ktor-client-core:1.6.1")
+    implementation("io.ktor:ktor-client-cio:1.6.1")
+    implementation("io.ktor:ktor-client-logging:1.6.1")
+    implementation("io.ktor:ktor-client-serialization:1.6.1")
     implementation(group="io.ktor", name="ktor-client-cio", version="1.6.1")
     implementation("me.xdrop:fuzzywuzzy:1.3.1")
 
