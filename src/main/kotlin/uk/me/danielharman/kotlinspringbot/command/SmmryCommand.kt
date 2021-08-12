@@ -1,5 +1,6 @@
 package uk.me.danielharman.kotlinspringbot.command
 
+import kotlinx.coroutines.runBlocking
 import org.springframework.stereotype.Component
 import uk.me.danielharman.kotlinspringbot.command.interfaces.Command
 import uk.me.danielharman.kotlinspringbot.command.interfaces.ISlashCommand
@@ -18,8 +19,7 @@ class SmmryCommand(private val smmryService: SmmryService): Command("summary", "
         val urlVal = event.getParamValue(commandParameters[0])
         val lengthVal = event.getParamValue(commandParameters[1])
 
-        val response = smmryService.getSummaryText(urlVal.value.toString(),lengthVal.value.toString().toInt())?.content
-
-        event.reply(response!!)
+        val response = runBlocking {smmryService.getSummaryText(urlVal.value.toString(),lengthVal.value.toString().toInt())}
+        event.reply(if (response?.sm_api_content != null) response.sm_api_content else "No content")
     }
 }

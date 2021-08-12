@@ -6,15 +6,15 @@ import kotlinx.serialization.Serializable
 @Serializable
 data class SmmryResponse(
         @SerialName("sm_api_message")
-        val apiMessage: String,
+        val sm_api_message: String,
         @SerialName("sm_api_character_count")
-        val characterCount: String,
+        val sm_api_character_count: String,
         @SerialName("sm_api_content_reduced")
-        val contentReduced: String,
+        val sm_api_content_reduced: String,
         @SerialName("sm_api_title")
-        val title: String,
+        val sm_api_title: String,
         @SerialName("sm_api_content")
-        val content: String,
+        val sm_api_content: String,
         @SerialName("sm_api_limitation")
-        val limitationMessage: String
+        val sm_api_limitation: String
 )
