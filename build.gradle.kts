@@ -72,6 +72,8 @@ dependencies {
     implementation("org.jetbrains.kotlinx:kotlinx-serialization-runtime:1.0-M1-1.4.0-rc") // JVM dependency
     implementation(group="io.ktor", name="ktor-client-cio", version="1.6.1")
     implementation("me.xdrop:fuzzywuzzy:1.3.1")
+    implementation("com.github.bastiaanjansen:otp-java:1.2.2")
+    implementation("com.google.guava:guava:31.0.1-jre")
 
     developmentOnly("org.springframework.boot:spring-boot-devtools:2.5.4")
     annotationProcessor("org.springframework.boot:spring-boot-configuration-processor:2.5.4")
