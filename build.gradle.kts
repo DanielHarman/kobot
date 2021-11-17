@@ -69,6 +69,7 @@ dependencies {
     implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8")
     implementation("org.jetbrains.kotlinx:kotlinx-serialization-runtime:1.0-M1-1.4.0-rc") // JVM dependency
     implementation(group="io.ktor", name="ktor-client-cio", version="1.6.5")
+    implementation("io.ktor:ktor-client-jackson:1.6.5")
     implementation("me.xdrop:fuzzywuzzy:1.3.1")
 
     developmentOnly("org.springframework.boot:spring-boot-devtools:2.5.6")
