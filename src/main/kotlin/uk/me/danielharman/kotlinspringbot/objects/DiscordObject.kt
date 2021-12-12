@@ -45,7 +45,7 @@ object DiscordObject {
             GatewayIntent.GUILD_EMOJIS,
             GatewayIntent.GUILD_MESSAGE_REACTIONS
         )
-            .setActivity(Activity.of(Activity.ActivityType.DEFAULT, "${properties.commandPrefix}help"))
+            .setActivity(Activity.of(Activity.ActivityType.PLAYING, "${properties.commandPrefix}help"))
 
         for (listener: ListenerAdapter in listeners) {
             builder.addEventListeners(listener)

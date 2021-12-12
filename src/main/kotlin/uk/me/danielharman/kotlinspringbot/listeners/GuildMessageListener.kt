@@ -6,7 +6,7 @@ import net.dv8tion.jda.api.events.guild.GuildJoinEvent
 import net.dv8tion.jda.api.events.guild.voice.GuildVoiceLeaveEvent
 import net.dv8tion.jda.api.events.interaction.SlashCommandEvent
 import net.dv8tion.jda.api.events.message.MessageDeleteEvent
-import net.dv8tion.jda.api.events.message.guild.GuildMessageReceivedEvent
+import net.dv8tion.jda.api.events.message.MessageReceivedEvent
 import net.dv8tion.jda.api.events.message.react.MessageReactionAddEvent
 import net.dv8tion.jda.api.events.message.react.MessageReactionRemoveEvent
 import net.dv8tion.jda.api.exceptions.ErrorResponseException
@@ -80,6 +80,8 @@ class GuildMessageListener(
 
     override fun onMessageReactionAdd(event: MessageReactionAddEvent) {
 
+        if(!event.isFromGuild) return
+
         if (event.userId == event.jda.selfUser.id || event.user?.isBot == true)
             return
 
@@ -144,6 +146,8 @@ class GuildMessageListener(
 
     override fun onMessageReactionRemove(event: MessageReactionRemoveEvent) {
 
+        if(!event.isFromGuild) return
+
         if (event.userId == event.jda.selfUser.id)
             return
 
@@ -176,6 +180,8 @@ class GuildMessageListener(
 
     override fun onMessageDelete(event: MessageDeleteEvent) {
 
+        if(!event.isFromGuild) return
+
         val getGuild = springGuildService.getGuild(event.guild.id)
         if (getGuild is Failure) {
             logger.error("onMessageDelete: ${getGuild.reason}")
@@ -189,6 +195,9 @@ class GuildMessageListener(
     }
 
     override fun onSlashCommand(event: SlashCommandEvent) {
+
+        if(!event.isFromGuild) return
+
         val messageEvent = event.toMessageEvent()
         try {
             commandFactory.getCommand(event.name).execute(messageEvent)
@@ -201,7 +210,10 @@ class GuildMessageListener(
         }
     }
 
-    override fun onGuildMessageReceived(event: GuildMessageReceivedEvent) {
+
+    override fun onMessageReceived(event: MessageReceivedEvent) {
+
+        if(!event.isFromGuild) return
 
         val author = event.author
         val message = event.message
@@ -344,7 +356,7 @@ class GuildMessageListener(
         }
     }
 
-    private fun runAdminCommand(event: GuildMessageReceivedEvent) {
+    private fun runAdminCommand(event: MessageReceivedEvent) {
 
         if (event.author.id == event.jda.selfUser.id || event.author.isBot) {
             logger.info("Not running command as author is me or a bot")

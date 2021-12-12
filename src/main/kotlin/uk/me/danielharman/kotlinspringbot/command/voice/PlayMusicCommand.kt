@@ -1,5 +1,6 @@
 package uk.me.danielharman.kotlinspringbot.command.voice
 
+import net.dv8tion.jda.api.entities.AudioChannel
 import net.dv8tion.jda.api.entities.VoiceChannel
 import org.springframework.stereotype.Component
 import uk.me.danielharman.kotlinspringbot.KotlinBotProperties
@@ -30,7 +31,7 @@ class PlayMusicCommand(
 ), ISlashCommand {
 
     override fun execute(event: DiscordMessageEvent) {
-        val voiceChannel: VoiceChannel?
+        val voiceChannel: AudioChannel?
 
         val guild = event.guild
 

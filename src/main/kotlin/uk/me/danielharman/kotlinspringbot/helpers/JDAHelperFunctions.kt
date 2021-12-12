@@ -7,9 +7,6 @@ import net.dv8tion.jda.api.events.guild.GenericGuildEvent
 
 object JDAHelperFunctions {
 
-    fun getBotVoiceChannel(event: GenericGuildEvent): VoiceChannel? =
-            event.guild.retrieveMemberById(event.jda.selfUser.id).complete()?.voiceState?.channel
-
     fun getAuthorIdFromMessageId(textChannel: TextChannel?, msgId: String): String =
             textChannel?.retrieveMessageById(msgId)?.complete()?.author?.id ?: ""
 

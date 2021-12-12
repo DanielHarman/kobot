@@ -58,7 +58,7 @@ repositories {
 dependencies {
     implementation(group = "joda-time", name = "joda-time", version = "2.10.10")
     implementation(group="com.fasterxml.jackson.datatype", name="jackson-datatype-joda", version="2.12.4")
-    implementation("net.dv8tion:JDA:4.3.0_346")
+    implementation("net.dv8tion:JDA:5.0.0-alpha.1")
     implementation("com.sedmelluq:lavaplayer:1.3.78")
     implementation("org.springframework.boot:spring-boot-starter-security:2.5.6")
     implementation("org.springframework.boot:spring-boot-starter-data-mongodb:2.5.6")

@@ -24,7 +24,7 @@ class DisconnectCommand(private val discordActionService: DiscordActionService) 
             is Success -> event.guild.audioManager.openAudioConnection(channel.value)
         }
 
-        if (guild.audioManager.isConnected || event.guild.audioManager.queuedAudioConnection != null) {
+        if (guild.audioManager.isConnected) {
             guild.audioManager.closeAudioConnection()
         } else {
             event.reply("I am not connected to an audio channel")
