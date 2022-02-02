@@ -39,6 +39,7 @@ class DefaultSecurityConfiguration(val userDetailsService: MongoUserDetailsServi
                 .authorizeRequests()
                 .antMatchers("/actuator/health").permitAll()
                 .antMatchers("/login*", "/css/*").permitAll()
+                .antMatchers("/auth").permitAll()
                 .anyRequest().authenticated()
                 .and()
                 .formLogin()
