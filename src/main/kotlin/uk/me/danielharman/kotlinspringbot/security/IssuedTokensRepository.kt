@@ -11,6 +11,7 @@ import org.springframework.stereotype.Repository
 data class IssuedToken(val issuedTime: DateTime, val userId: ObjectId){
     @Id
     lateinit var id: ObjectId
+    var expiryTime: DateTime = issuedTime.plusMinutes(5)
 }
 
 @Repository
