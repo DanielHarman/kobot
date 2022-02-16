@@ -12,6 +12,8 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder
 import org.springframework.stereotype.Component
 import uk.me.danielharman.kotlinspringbot.helpers.Failure
 import uk.me.danielharman.kotlinspringbot.helpers.Success
+import uk.me.danielharman.kotlinspringbot.models.Platform
+import uk.me.danielharman.kotlinspringbot.models.PlatformId
 import uk.me.danielharman.kotlinspringbot.models.admin.enums.Role
 import uk.me.danielharman.kotlinspringbot.objects.ApplicationInfo
 import uk.me.danielharman.kotlinspringbot.objects.DiscordObject
@@ -52,52 +54,30 @@ class SetupService(
             logger.info("Bot is running in development mode.")
         }
 
-        val defaultUser = userRepository.findByUsername("admin")
-        //Setup dashboard user
-        if (defaultUser == null) {
-            logger.info("########################")
-            logger.info("No default user found. Creating a new user.")
-            val defaultUsername = "admin"
-            val randomUUID = UUID.randomUUID().toString()
-            logger.info("Username: $defaultUsername Password: $randomUUID")
-            userRepository.save(DashboardUser(defaultUsername, BCryptPasswordEncoder().encode(randomUUID)))
-            logger.info("########################")
-        }
-
-        if (activeProfiles.contains("dev")) {
-            val devUser = userRepository.findByUsername("dev")
-            //Setup dashboard user
-            if (devUser == null) {
-                logger.info("########################")
-                logger.info("No dev user found. Creating a new user.")
-                val defaultUsername = "dev"
-                val password = "password"
-                logger.info("Username: $defaultUsername Password: $password")
-                userRepository.save(DashboardUser(defaultUsername, BCryptPasswordEncoder().encode(password)))
-                logger.info("########################")
-            }
-        }
-
-        //Create default admin
-        administratorService.createBotAdministrator(kotlinBotProperties.primaryPrivilegedUserId, setOf(Role.Primary))
-
         if (!activeProfiles.contains("discordDisabled")) {
-            //Injecting listeners here otherwise we'll get circular dependencies
-            DiscordObject.registerListeners(listeners)
+            try {
+                //Injecting listeners here otherwise we'll get circular dependencies
+                DiscordObject.registerListeners(listeners)
 
-            when(val dc = discordService.startDiscordConnection())
-            {
-                is Failure -> logger.error("Discord connection failed to start ${dc.reason}")
-                is Success -> {
-                    logger.info(dc.value)
-                    Timer().scheduleAtFixedRate(object : TimerTask() {
-                        override fun run() {
-                            discordService.sendLatestXkcd()
-                        }
-                    }, 3000, 10800000) // Start after 3 seconds, check every 3hrs
-                    administratorService.logToAdmins("Bot started")
-                    administratorService.logToAdmins("Syncing guilds with database")
-                    discordService.syncGuildsWithDb()
+                when (val dc = discordService.startDiscordConnection()) {
+                    is Failure -> logger.error("Discord connection failed to start ${dc.reason}")
+                    is Success -> {
+                        logger.info(dc.value)
+                        Timer().scheduleAtFixedRate(object : TimerTask() {
+                            override fun run() {
+                                discordService.sendLatestXkcd()
+                            }
+                        }, 3000, 10800000) // Start after 3 seconds, check every 3hrs
+                        administratorService.logToAdmins("Bot started")
+                        administratorService.logToAdmins("Syncing guilds with database")
+                        discordService.syncGuildsWithDb()
+                    }
+                }
+            }catch (e: Exception){
+                if (ApplicationInfo.isDev){
+                    logger.error("Discord connection failed to start $e")
+                } else{
+                    throw e
                 }
             }
         } else {

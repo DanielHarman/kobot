@@ -31,47 +31,19 @@ class SecDisabledSecurityConfiguration : WebSecurityConfigurerAdapter(){
 @Profile("default || dev")
 @Configuration
 @EnableWebSecurity
-class DefaultSecurityConfiguration(val userDetailsService: MongoUserDetailsService) : WebSecurityConfigurerAdapter() {
+class DefaultSecurityConfiguration : WebSecurityConfigurerAdapter() {
 
     override fun configure(http: HttpSecurity) {
         http
-                .csrf().disable()
+                .csrf()
+                .disable()
                 .authorizeRequests()
                 .antMatchers("/actuator/health").permitAll()
                 .antMatchers("/login*", "/css/*").permitAll()
                 .antMatchers("/auth").permitAll()
                 .anyRequest().authenticated()
                 .and()
-                .formLogin()
-                .loginPage("/login.html")
-                .loginProcessingUrl("/perform_login")
-                .failureHandler(authenticationFailureHandler())
-                .permitAll()
-                .and()
                 .logout()
                 .permitAll()
     }
-
-    override fun configure(auth: AuthenticationManagerBuilder) {
-        auth.userDetailsService(userDetailsService).passwordEncoder(passwordEncoder())
-    }
-
-    @Bean
-    fun passwordEncoder(): PasswordEncoder {
-        return BCryptPasswordEncoder()
-    }
-
-    @Bean
-    fun authenticationFailureHandler(): AuthenticationFailureHandler {
-        return AuthFailureHandler()
-    }
-
-    class AuthFailureHandler : AuthenticationFailureHandler {
-        override fun onAuthenticationFailure(request: HttpServletRequest, response: HttpServletResponse, exception: AuthenticationException) {
-            response.status = 401
-            response.sendRedirect("login.html?error=failedAuth")
-        }
-
-    }
-
 }
