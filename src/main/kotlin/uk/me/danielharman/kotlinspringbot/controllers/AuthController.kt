@@ -2,11 +2,9 @@ package uk.me.danielharman.kotlinspringbot.controllers
 
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
-import org.springframework.http.ResponseEntity
+import org.springframework.security.authentication.AuthenticationManager
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken
 import org.springframework.web.bind.annotation.*
-import uk.me.danielharman.kotlinspringbot.helpers.Failure
-import uk.me.danielharman.kotlinspringbot.helpers.Success
-import uk.me.danielharman.kotlinspringbot.security.DashboardService
 
 @RestController
 @RequestMapping(path = ["auth"])

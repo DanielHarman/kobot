@@ -22,43 +22,12 @@ class DashboardService(
         return if (user.isPresent) Success(user.get()) else Failure("User not found")
     }
 
-    fun getUserByPlatformId(id: String, platform: Platform): OperationResult<DashboardUser, String> {
-        val user = repository.findByPlatformId(id, platform) ?: return Failure("User not found")
-        return Success(user)
-    }
-
-    fun getUserLoginUrl(id: String, platform: Platform): OperationResult<String, String> {
-        return when (val user = getUserByPlatformId(id, platform)) {
+    fun getUserLoginUrl(id: String): OperationResult<String, String> {
+        return when (val user = getUser(id)) {
             is Failure -> user
             is Success -> {
-
-                val result = issuedTokensRepository.save(IssuedToken(DateTime.now(), user.value.id))
-
-                Success("${dashboardProperties.rootAddress}/login?userId=${user.value.id}&token=${result.id}")
+                Success("${dashboardProperties.rootAddress}/login?userId=${user.value.userId}&token=${user.value.token}")
             }
         }
     }
-
-    fun verifyLoginRequest(userId: String, token: String): OperationResult<String, String> {
-        val tokenRequest = issuedTokensRepository.findById(token)
-
-        if (tokenRequest.isEmpty || tokenRequest.get().expiryTime.isBeforeNow) {
-            return Failure("Login token has expired")
-        }
-
-        return when (val user = getUser(userId)) {
-            is Failure -> user
-            is Success -> {
-                when (val jwt = tokenService.issue(user.value.id.toHexString(), tokenRequest.get().id.toHexString())) {
-                    is Failure -> Failure("Failed to issue token")
-                    is Success -> {
-                        issuedTokensRepository.deleteById(tokenRequest.get().id.toHexString())
-                        jwt
-                    }
-                }
-            }
-        }
-    }
-
-
 }

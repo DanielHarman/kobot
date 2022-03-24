@@ -8,7 +8,7 @@ import org.springframework.data.mongodb.repository.MongoRepository
 import org.springframework.stereotype.Repository
 
 @Document(collection = "issuedTokens")
-data class IssuedToken(val issuedTime: DateTime, val userId: ObjectId){
+data class IssuedToken(val issuedTime: DateTime, val userId: String){
     @Id
     lateinit var id: ObjectId
     var expiryTime: DateTime = issuedTime.plusMinutes(5)
