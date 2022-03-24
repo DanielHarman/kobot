@@ -11,6 +11,5 @@ class DashboardUser(val userId: String, val token: String){
 
 @Repository
 interface DashboardUserRepository : MongoRepository<DashboardUser, String> {
-    @Query(value = "{ 'platformIds': { \$elemMatch: { '_id': ?0, 'platform': ?1 } } }")
-    fun findByPlatformId(id: String, platform: Platform): DashboardUser?
+    fun findByUserId(userId: String): DashboardUser
 }

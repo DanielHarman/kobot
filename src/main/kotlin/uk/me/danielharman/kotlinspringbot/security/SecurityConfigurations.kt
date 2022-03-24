@@ -29,7 +29,11 @@ class SecDisabledSecurityConfiguration : WebSecurityConfigurerAdapter(){
 @Profile("default || dev")
 @Configuration
 @EnableWebSecurity
-class DefaultSecurityConfiguration : WebSecurityConfigurerAdapter() {
+class DefaultSecurityConfiguration(private val dashboardUserService: DashboardUserService) : WebSecurityConfigurerAdapter() {
+
+    override fun configure(auth: AuthenticationManagerBuilder) {
+        auth.userDetailsService(dashboardUserService)
+    }
 
     override fun configure(http: HttpSecurity) {
         http
@@ -40,4 +44,15 @@ class DefaultSecurityConfiguration : WebSecurityConfigurerAdapter() {
                 .authorizeRequests()
                 .antMatchers("/**").permitAll()
     }
+
+    @Bean
+     fun passwordEncoder(): PasswordEncoder{
+         return BCryptPasswordEncoder()
+     }
+
+    @Bean
+    override fun authenticationManagerBean(): AuthenticationManager {
+        return super.authenticationManagerBean()
+    }
+
 }
