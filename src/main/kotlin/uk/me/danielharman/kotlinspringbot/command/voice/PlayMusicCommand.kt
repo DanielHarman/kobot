@@ -10,6 +10,7 @@ import uk.me.danielharman.kotlinspringbot.events.DiscordMessageEvent
 import uk.me.danielharman.kotlinspringbot.helpers.Embeds
 import uk.me.danielharman.kotlinspringbot.helpers.Failure
 import uk.me.danielharman.kotlinspringbot.helpers.Success
+import uk.me.danielharman.kotlinspringbot.helpers.VoiceHelpers
 import uk.me.danielharman.kotlinspringbot.models.CommandParameter
 import uk.me.danielharman.kotlinspringbot.models.CommandParameter.ParamType
 import uk.me.danielharman.kotlinspringbot.provider.GuildMusicPlayerProvider
@@ -90,6 +91,8 @@ class PlayMusicCommand(
             guild.audioManager.closeAudioConnection()
             guild.audioManager.openAudioConnection(voiceChannel)
         }
+
+        url = VoiceHelpers.getAudioUrl(url ?: "")
 
         logger.info("Connected voice channel from manager: " + guild.audioManager.connectedChannel?.id)
         val musicManager = guildMusicPlayerProvider.getGuildAudioPlayer(voiceChannel.guild)
