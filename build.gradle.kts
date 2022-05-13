@@ -72,8 +72,8 @@ dependencies {
     implementation("me.xdrop:fuzzywuzzy:1.4.0")
 
     developmentOnly("org.springframework.boot:spring-boot-devtools:2.6.7")
-    annotationProcessor("org.springframework.boot:spring-boot-configuration-processor:2.5.6")
-    testImplementation("org.springframework.boot:spring-boot-starter-test:2.5.6") {
+    annotationProcessor("org.springframework.boot:spring-boot-configuration-processor:2.6.7")
+    testImplementation("org.springframework.boot:spring-boot-starter-test:2.6.7") {
         exclude(group = "org.junit.vintage", module = "junit-vintage-engine")
     }
     testImplementation("de.flapdoodle.embed:de.flapdoodle.embed.mongo:3.4.5")
