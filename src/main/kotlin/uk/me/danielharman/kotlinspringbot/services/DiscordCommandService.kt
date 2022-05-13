@@ -1,5 +1,6 @@
 package uk.me.danielharman.kotlinspringbot.services
 
+import com.fasterxml.jackson.databind.ObjectMapper
 import me.xdrop.fuzzywuzzy.FuzzySearch
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
@@ -15,9 +16,24 @@ import uk.me.danielharman.kotlinspringbot.helpers.Failure
 import uk.me.danielharman.kotlinspringbot.helpers.OperationResult
 import uk.me.danielharman.kotlinspringbot.helpers.Success
 import uk.me.danielharman.kotlinspringbot.models.DiscordCommand
+import uk.me.danielharman.kotlinspringbot.models.DiscordCommand.CommandType.FILE
+import uk.me.danielharman.kotlinspringbot.models.DiscordCommand.CommandType.STRING
 import uk.me.danielharman.kotlinspringbot.repositories.DiscordCommandRepository
+import java.io.BufferedInputStream
+import java.io.BufferedOutputStream
+import java.io.ByteArrayInputStream
+import java.io.File
+import java.io.FileDescriptor.out
+import java.io.FileInputStream
+import java.io.FileOutputStream
 import java.io.InputStream
+import java.io.OutputStream
 import java.lang.Integer.min
+import java.time.LocalDateTime
+import java.util.UUID
+import java.util.zip.ZipEntry
+import java.util.zip.ZipInputStream
+import java.util.zip.ZipOutputStream
 import kotlin.math.ceil
 
 @Service
@@ -40,11 +56,24 @@ class DiscordCommandService(
         guildId: String,
         page: Int = 0,
         pageSize: Int = 20,
+        type: DiscordCommand.CommandType? = null,
         sort: Order = Order.asc("key")
     ): OperationResult<List<DiscordCommand>, String> = when (val guild = springGuildService.getGuild(guildId)) {
         is Failure -> guild
         is Success -> Success(
-            repository.findAllByGuildId(guildId, PageRequest.of(page, pageSize, Sort.by(sort))).toList()
+            when (type) {
+                STRING -> repository.findAllByGuildIdAndType(
+                    guildId,
+                    STRING,
+                    PageRequest.of(page, pageSize, Sort.by(sort))
+                ).toList()
+                FILE -> repository.findAllByGuildIdAndType(
+                    guildId,
+                    FILE,
+                    PageRequest.of(page, pageSize, Sort.by(sort))
+                ).toList()
+                null -> repository.findAllByGuildId(guildId, PageRequest.of(page, pageSize, Sort.by(sort))).toList()
+            }
         )
     }
 
@@ -74,7 +103,7 @@ class DiscordCommandService(
 
                 //The matching for the guild is done after the command is retrieved so guilds with fewer commands were less likely to
                 // be returned
-                if(count > 0) {
+                if (count > 0) {
                     while (command == null && triesCounter < 100) {
                         command = mongoTemplate.aggregate(
                             Aggregation.newAggregation(
@@ -108,7 +137,7 @@ class DiscordCommandService(
         creatorId: String,
         overwrite: Boolean
     ): OperationResult<DiscordCommand, String> {
-        return createCommand(guildId, key, content, null, DiscordCommand.CommandType.STRING, creatorId, true)
+        return createCommand(guildId, key, content, null, STRING, creatorId, true)
     }
 
     fun createFileCommand(
@@ -119,7 +148,7 @@ class DiscordCommandService(
         inputStream: InputStream
     ): OperationResult<DiscordCommand, String> =
         when (val command =
-            createCommand(guildId, key, null, fileName, DiscordCommand.CommandType.FILE, creatorId, true)) {
+            createCommand(guildId, key, null, fileName, FILE, creatorId, true)) {
             is Failure -> command
             is Success -> {
                 attachmentService.saveFile(inputStream, guildId, fileName, key)
@@ -141,7 +170,7 @@ class DiscordCommandService(
                 if (command is Failure || overwrite) {
 
                     if (command is Success && overwrite) {
-                        if (command.value.type == DiscordCommand.CommandType.FILE) {
+                        if (command.value.type == FILE) {
                             attachmentService.deleteAttachment(
                                 guildId,
                                 command.value.fileName ?: "",
@@ -177,7 +206,7 @@ class DiscordCommandService(
                     is Failure -> command
                     is Success -> {
                         repository.deleteById(command.value.id)
-                        if (command.value.type == DiscordCommand.CommandType.FILE) {
+                        if (command.value.type == FILE) {
                             attachmentService.deleteAttachment(
                                 guildId,
                                 command.value.fileName ?: "",
@@ -224,6 +253,107 @@ class DiscordCommandService(
                     .subList(0, min(limit, commandList.size)))
             }
         }
+    }
+
+    /***
+     * Converts commands into JSON body
+     */
+    fun getCommandsJson(userId: String, guildId: String, pretty: Boolean = false, textOnly: Boolean = true): String {
+        val mapper = ObjectMapper()
+
+        val root = mapper.createObjectNode()
+        val commandsArray = mapper.createArrayNode()
+
+
+        when (val commandCount = commandCount(guildId)) {
+            is Failure -> {}
+            is Success -> {
+                if (commandCount.value > 0) {
+
+                    val noOfPages = ceil(commandCount.value.toDouble() / CMD_PAGE_SIZE).toInt()
+
+                    //Paginated so that we aren't pulling 1000s of commands at a time if that ever happens
+                    for (page in 0 until noOfPages) {
+
+                        val result =
+                            if (textOnly) getCommands(guildId, page, CMD_PAGE_SIZE, STRING)
+                            else getCommands(guildId, page, CMD_PAGE_SIZE)
+
+                        when (result) {
+                            is Success -> {
+                                for (command in result.value) {
+                                    val node = mapper.createObjectNode()
+                                    node.put("key", command.key)
+                                    node.put("author", command.creatorId)
+                                    node.put("created", command.created.toString())
+                                    when (command.type) {
+                                        STRING -> {
+                                            node.put("type", "string")
+                                            node.put("content", command.content)
+                                        }
+                                        FILE -> {
+                                            node.put("type", "file")
+                                            node.put("filename", command.fileName)
+                                        }
+                                    }
+                                    commandsArray.add(node)
+                                }
+                            }
+                            else -> {}
+                        }
+                    }
+                }
+            }
+        }
+
+        root.put("userId", userId)
+        root.put("guildId", guildId)
+        root.put("dateRequested", LocalDateTime.now().toString())
+        root.put("count", commandsArray.size())
+        root.replace("commands", commandsArray)
+
+        return if (pretty) root.toPrettyString() else root.toString()
+    }
+
+    fun exportCommands(userId: String, guildId: String, textOnly: Boolean = true): InputStream {
+        val json = getCommandsJson(userId, guildId, true, textOnly)
+
+        val tempFile = File.createTempFile(
+            "guildexport-$guildId-$userId-${UUID.randomUUID()}",
+            ".zip"
+        )
+
+        tempFile.createNewFile()
+
+        ZipOutputStream(
+            BufferedOutputStream(
+                FileOutputStream(
+                    tempFile
+                )
+            )
+        ).use { x ->
+            json.byteInputStream().use { fi ->
+                BufferedInputStream(fi).use { t ->
+                    val entry = ZipEntry("commands.json")
+                    x.putNextEntry(entry)
+                    t.copyTo(x)
+                }
+            }
+            if(!textOnly) {
+                val commands = getCommands(guildId, 0, 100, FILE) as Success
+                for (command in commands.value) {
+                    (attachmentService.getFile(guildId, command.fileName!!, command.key) as Success).value.use { file ->
+                        BufferedInputStream(file).use { t ->
+                            val entry = ZipEntry(command.fileName)
+                            x.putNextEntry(entry)
+                            t.copyTo(x)
+                        }
+                    }
+                }
+            }
+        }
+
+        return FileInputStream(tempFile)
     }
 
 }

@@ -11,6 +11,7 @@ interface DiscordCommandRepository : MongoRepository<DiscordCommand, String> {
 
     fun findFirstByGuildIdAndKey(guildId:String, key: String): DiscordCommand?
     fun findAllByGuildId(guildId: String, pageable: Pageable): Page<DiscordCommand>
+    fun findAllByGuildIdAndType(guildId: String, type: DiscordCommand.CommandType, pageable: Pageable): Page<DiscordCommand>
     fun countByGuildId(guildId: String): Long
 
 }
