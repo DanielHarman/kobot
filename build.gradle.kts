@@ -64,13 +64,17 @@ dependencies {
     implementation("org.springframework.boot:spring-boot-starter-data-mongodb:2.6.7")
     implementation("org.springframework.boot:spring-boot-starter-web:2.6.7")
     implementation("org.springframework.boot:spring-boot-starter-actuator:2.6.7")
+    implementation("org.springframework.amqp:spring-rabbit:2.4.5")
+    implementation("org.springframework.amqp:spring-amqp:2.4.5")
     implementation("com.fasterxml.jackson.module:jackson-module-kotlin:2.13.2")
     implementation("org.jetbrains.kotlin:kotlin-reflect")
     implementation("org.jetbrains.kotlin:kotlin-stdlib")
-    implementation("org.jetbrains.kotlinx:kotlinx-serialization-runtime:1.0-M1-1.4.0-rc") // JVM dependency
     implementation(group="io.ktor", name="ktor-client-cio", version="1.6.5")
     implementation("me.xdrop:fuzzywuzzy:1.4.0")
-
+    implementation("com.rabbitmq:amqp-client:5.9.0")
+    implementation("io.ktor:ktor-server-core-jvm:2.0.2")
+    implementation("io.ktor:ktor-server-netty-jvm:2.0.2")
+    implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.3.3")
     developmentOnly("org.springframework.boot:spring-boot-devtools:2.6.7")
     annotationProcessor("org.springframework.boot:spring-boot-configuration-processor:2.5.6")
     testImplementation("org.springframework.boot:spring-boot-starter-test:2.5.6") {

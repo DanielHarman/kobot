@@ -1,5 +1,8 @@
 package uk.me.danielharman.kotlinspringbot.listeners
 
+import io.ktor.util.*
+import kotlinx.serialization.encodeToString
+import kotlinx.serialization.json.Json
 import net.dv8tion.jda.api.entities.Member
 import net.dv8tion.jda.api.entities.Message
 import net.dv8tion.jda.api.events.guild.GuildJoinEvent
@@ -13,6 +16,7 @@ import net.dv8tion.jda.api.exceptions.ErrorResponseException
 import net.dv8tion.jda.api.hooks.ListenerAdapter
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
+import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Component
 import uk.me.danielharman.kotlinspringbot.KotlinBotProperties
 import uk.me.danielharman.kotlinspringbot.events.DiscordMessageEvent
@@ -24,9 +28,11 @@ import uk.me.danielharman.kotlinspringbot.helpers.JDAHelperFunctions.getAuthorId
 import uk.me.danielharman.kotlinspringbot.helpers.Success
 import uk.me.danielharman.kotlinspringbot.mappers.toMessageEvent
 import uk.me.danielharman.kotlinspringbot.models.Meme
+import uk.me.danielharman.kotlinspringbot.models.rabbitmq.ImagePostMessage
 import uk.me.danielharman.kotlinspringbot.services.DiscordActionService
 import uk.me.danielharman.kotlinspringbot.services.MemeService
 import uk.me.danielharman.kotlinspringbot.services.SpringGuildService
+import java.net.URL
 import java.util.*
 import java.util.regex.Pattern
 
@@ -37,7 +43,8 @@ class GuildMessageListener(
     private val commandFactory: CommandFactory,
     private val properties: KotlinBotProperties,
     private val memeService: MemeService,
-    private val discordService: DiscordActionService
+    private val discordService: DiscordActionService,
+    @Autowired private val rabbitMqSender: RabbitMqSender
 ) : ListenerAdapter() {
 
     private val logger: Logger = LoggerFactory.getLogger(this::class.java)
@@ -224,6 +231,18 @@ class GuildMessageListener(
         var deafenedChannels = listOf<String>()
         if (getDeafenedChannels is Success) {
             deafenedChannels = getDeafenedChannels.value
+        }
+
+        //TODO: Remove this hardcoded channel ID and place this code in the meme channels functionality
+        if (event.channel.id == "686698171350515792") {
+
+           val attachment = message.attachments.firstOrNull()
+            if (attachment != null && attachment.isImage()) {
+                val url = URL(message.attachments.get(0).url)
+                val img = url.readBytes().encodeBase64()
+                val imagePostMessage = ImagePostMessage(message.id, img, message.channel.id, message.author.id,"Discord")
+                rabbitMqSender.send(imagePostMessage)
+            }
         }
 
         val isDeafened = deafenedChannels.contains(event.channel.id)
