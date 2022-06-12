@@ -233,10 +233,9 @@ class GuildMessageListener(
             deafenedChannels = getDeafenedChannels.value
         }
 
-        //TODO: Remove this hardcoded channel ID and place this code in the meme channels functionality
-        if (event.channel.id == "686698171350515792") {
-
-           val attachment = message.attachments.firstOrNull()
+        if(properties.testmode && properties.testchannels.contains(event.channel.id))
+        {
+            val attachment = message.attachments.firstOrNull()
             if (attachment != null && attachment.isImage()) {
                 val url = URL(message.attachments.get(0).url)
                 val img = url.readBytes().encodeBase64()
@@ -273,6 +272,14 @@ class GuildMessageListener(
 
                 if (memeChannels.contains(event.channel.id)) {
                     createMeme(event.message, event.guild.id, event.author.id, event.channel.id)
+
+                    val attachment = message.attachments.firstOrNull()
+                    if (attachment != null && attachment.isImage()) {
+                        val url = URL(message.attachments.get(0).url)
+                        val img = url.readBytes().encodeBase64()
+                        val imagePostMessage = ImagePostMessage(message.id, img, message.channel.id, message.author.id,"Discord")
+                        rabbitMqSender.send(imagePostMessage)
+                    }
                 }
 
                 val words = message.contentStripped
@@ -288,6 +295,11 @@ class GuildMessageListener(
                 springGuildService.updateUserCount(guild.id, author.id, words.size)
             }
         }
+    }
+
+    private fun testMode()
+    {
+
     }
 
     private var urlPattern: Pattern = Pattern.compile(

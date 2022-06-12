@@ -5,6 +5,7 @@ import net.dv8tion.jda.api.entities.PrivateChannel
 import net.dv8tion.jda.api.entities.TextChannel
 import org.joda.time.DateTime
 import org.slf4j.LoggerFactory
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty
 import org.springframework.stereotype.Service
 import uk.me.danielharman.kotlinspringbot.KotlinBotProperties
 import uk.me.danielharman.kotlinspringbot.command.interfaces.ISlashCommand
@@ -15,17 +16,41 @@ import uk.me.danielharman.kotlinspringbot.helpers.Success
 import uk.me.danielharman.kotlinspringbot.models.DiscordChannelEmbedMessage
 import uk.me.danielharman.kotlinspringbot.models.DiscordChannelMessage
 import uk.me.danielharman.kotlinspringbot.models.SpringGuild
+import uk.me.danielharman.kotlinspringbot.models.rabbitmq.DuplicateMessage
+import uk.me.danielharman.kotlinspringbot.models.rabbitmq.DuplicateMessageResponse
+import uk.me.danielharman.kotlinspringbot.models.rabbitmq.ImagePostMessage
 import uk.me.danielharman.kotlinspringbot.objects.DiscordObject
+import java.util.function.Consumer
 
 @Service
+@ConditionalOnProperty(name = ["base.platformtype"], havingValue = "discord")
 class DiscordService(
     private val springGuildService: SpringGuildService,
     private val xkcdService: XkcdService,
     private val properties: KotlinBotProperties,
     private val commands: List<ISlashCommand>
-) {
+): MessagingPlatformService {
 
     private val logger = LoggerFactory.getLogger(DiscordService::class.java)
+    override fun sendImageDuplicationResponse(imagePostMessage:ImagePostMessage, messageResponse: DuplicateMessageResponse) {
+        val originChannel = DiscordObject.jda.getTextChannelById(imagePostMessage.ChannelId)
+        if(originChannel?.members == null) return
+
+        var listOfJumpUrlsMessage = ""
+        var imageRepostCount = 0
+            messageResponse.DuplicateMessage.forEach(Consumer { (MessageId, _, ChannelId, _): DuplicateMessage ->
+                val channel = DiscordObject.jda.getTextChannelById(ChannelId)
+
+                if(channel?.members == null || channel.members.stream().noneMatch{ x-> x.user.id == imagePostMessage.AuthorId}) return@Consumer
+
+                imageRepostCount+=1
+                val message = channel?.retrieveMessageById(MessageId)?.complete()
+                val jumpUrl = message?.jumpUrl
+                listOfJumpUrlsMessage = listOfJumpUrlsMessage + jumpUrl + "\n"
+            })
+
+            originChannel!!.sendMessage("You have posted an image that has already been posted $imageRepostCount times, this might be a repost. Here are the message links: $listOfJumpUrlsMessage").queue()
+    }
 
     fun sendLatestXkcd(): OperationResult<String, String> {
         logger.info("Checking for new XKCD comic")
