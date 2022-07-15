@@ -1,12 +1,12 @@
 package uk.me.danielharman.kotlinspringbot.command.administrators
 
-import net.dv8tion.jda.api.events.message.priv.PrivateMessageReceivedEvent
+import net.dv8tion.jda.api.events.message.MessageReceivedEvent
 import org.springframework.stereotype.Component
 import uk.me.danielharman.kotlinspringbot.command.interfaces.IAdminCommand
 
 @Component
 class AdminPingCommand : IAdminCommand {
-    override fun execute(event: PrivateMessageReceivedEvent) =
+    override fun execute(event: MessageReceivedEvent) =
         event.channel.sendMessage("pong ${event.author.asMention}").queue()
     override fun matchCommandString(str: String): Boolean = str.toLowerCase() == "ping"
     override fun getCommandString(): String = "ping"

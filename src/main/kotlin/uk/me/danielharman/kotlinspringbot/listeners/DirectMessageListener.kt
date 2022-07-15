@@ -1,6 +1,7 @@
 package uk.me.danielharman.kotlinspringbot.listeners
 
-import net.dv8tion.jda.api.events.message.priv.PrivateMessageReceivedEvent
+import net.dv8tion.jda.api.entities.ChannelType
+import net.dv8tion.jda.api.events.message.MessageReceivedEvent
 import net.dv8tion.jda.api.hooks.ListenerAdapter
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
@@ -16,7 +17,9 @@ class DirectMessageListener(
 
     private val logger: Logger = LoggerFactory.getLogger(this::class.java)
 
-    override fun onPrivateMessageReceived(event: PrivateMessageReceivedEvent) {
+    override fun onMessageReceived(event: MessageReceivedEvent) {
+        if(event.channelType != ChannelType.PRIVATE) return
+
         when {
             event.message.contentStripped.startsWith(properties.privilegedCommandPrefix) -> {
                 runCommand(event)
@@ -24,7 +27,7 @@ class DirectMessageListener(
         }
     }
 
-    private fun runCommand(event: PrivateMessageReceivedEvent) {
+    private fun runCommand(event: MessageReceivedEvent) {
 
         if (event.author.id == event.jda.selfUser.id || event.author.isBot) {
             logger.info("Not running command as author is me or a bot")

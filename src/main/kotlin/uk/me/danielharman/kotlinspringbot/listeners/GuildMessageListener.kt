@@ -1,12 +1,14 @@
 package uk.me.danielharman.kotlinspringbot.listeners
 
+import net.dv8tion.jda.api.entities.ChannelType
 import net.dv8tion.jda.api.entities.Member
 import net.dv8tion.jda.api.entities.Message
+import net.dv8tion.jda.api.entities.emoji.Emoji
 import net.dv8tion.jda.api.events.guild.GuildJoinEvent
 import net.dv8tion.jda.api.events.guild.voice.GuildVoiceLeaveEvent
-import net.dv8tion.jda.api.events.interaction.SlashCommandEvent
+import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent
 import net.dv8tion.jda.api.events.message.MessageDeleteEvent
-import net.dv8tion.jda.api.events.message.guild.GuildMessageReceivedEvent
+import net.dv8tion.jda.api.events.message.MessageReceivedEvent
 import net.dv8tion.jda.api.events.message.react.MessageReactionAddEvent
 import net.dv8tion.jda.api.events.message.react.MessageReactionRemoveEvent
 import net.dv8tion.jda.api.exceptions.ErrorResponseException
@@ -83,63 +85,63 @@ class GuildMessageListener(
         if (event.userId == event.jda.selfUser.id || event.user?.isBot == true)
             return
 
-        if (event.reactionEmote.isEmoji) {
-            val emoji = event.reactionEmote.asCodepoints
 
-            val getGuild = springGuildService.getGuild(event.guild.id)
-            if (getGuild is Failure) {
-                logger.error("onMessageReactionAdd: ${getGuild.reason}")
-                return
-            }
-            val guild = (getGuild as Success).value
+        val emoji = event.emoji
 
-            if (guild.memeChannels.contains(event.channel.id)) {
+        val getGuild = springGuildService.getGuild(event.guild.id)
+        if (getGuild is Failure) {
+            logger.error("onMessageReactionAdd: ${getGuild.reason}")
+            return
+        }
+        val guild = (getGuild as Success).value
 
-                if (event.userId == getAuthorIdFromMessageId(event.reaction.textChannel, event.messageId)) {
-                    val message = event.retrieveMessage().complete()
-                    when (emoji) {
-                        EmojiCodes.ThumbsDown, EmojiCodes.ThumbsUp -> {
-                            val user = event.user ?: return
-                            logger.info("[Message Listener] Removing reaction by posting user")
-                            event.reaction.removeReaction(user).queue()
-                        }
-                        EmojiCodes.Cross -> {
-                            logger.info("Deleting meme by user request")
-                            memeService.deleteMeme(event.guild.id, event.messageId)
-                            message.clearReactions(EmojiCodes.ThumbsUp).queue()
-                            message.clearReactions(EmojiCodes.ThumbsDown).queue()
-                            message.clearReactions(EmojiCodes.Cross).queue()
-                        }
-                        EmojiCodes.CheckMark -> {
-                            createMeme(message, guild.guildId, message.author.id, message.channel.id, true)
-                            message.clearReactions(EmojiCodes.CheckMark).queue()
-                        }
+        if (guild.memeChannels.contains(event.channel.id)) {
+
+            if (event.userId == getAuthorIdFromMessageId(event.reaction.textChannel, event.messageId)) {
+                val message = event.retrieveMessage().complete()
+                when (emoji) {
+                    EmojiCodes.ThumbsDown, EmojiCodes.ThumbsUp -> {
+                        val user = event.user ?: return
+                        logger.info("[Message Listener] Removing reaction by posting user")
+                        event.reaction.removeReaction(user).queue()
                     }
-                    return
-                } else if (emoji == EmojiCodes.Cross) {
-                    event.user?.let { event.reaction.removeReaction(it).queue() }
+                    EmojiCodes.Cross -> {
+                        logger.info("Deleting meme by user request")
+                        memeService.deleteMeme(event.guild.id, event.messageId)
+                        message.clearReactions(EmojiCodes.ThumbsUp).queue()
+                        message.clearReactions(EmojiCodes.ThumbsDown).queue()
+                        message.clearReactions(EmojiCodes.Cross).queue()
+                    }
+                    EmojiCodes.CheckMark -> {
+                        createMeme(message, guild.guildId, message.author.id, message.channel.id, true)
+                        message.clearReactions(EmojiCodes.CheckMark).queue()
+                    }
                 }
+                return
+            } else if (emoji == EmojiCodes.Cross) {
+                event.user?.let { event.reaction.removeReaction(it).queue() }
+            }
 
-                //Thumbs up
-                if (emoji == EmojiCodes.ThumbsUp) {
-                    if (!memeService.addUpvote(
-                            guild.guildId,
-                            event.messageId,
-                            event.userId
-                        )
-                    ) logger.error("[MessageListener] Failed to upvote")
-                }
-                //Thumbs down
-                else if (emoji == EmojiCodes.ThumbsDown) {
-                    if (!memeService.addDownvote(
-                            guild.guildId,
-                            event.messageId,
-                            event.userId
-                        )
-                    ) logger.error("[MessageListener] Failed to downvote")
-                }
+            //Thumbs up
+            if (emoji == EmojiCodes.ThumbsUp) {
+                if (!memeService.addUpvote(
+                        guild.guildId,
+                        event.messageId,
+                        event.userId
+                    )
+                ) logger.error("[MessageListener] Failed to upvote")
+            }
+            //Thumbs down
+            else if (emoji == EmojiCodes.ThumbsDown) {
+                if (!memeService.addDownvote(
+                        guild.guildId,
+                        event.messageId,
+                        event.userId
+                    )
+                ) logger.error("[MessageListener] Failed to downvote")
             }
         }
+
     }
 
     override fun onMessageReactionRemove(event: MessageReactionRemoveEvent) {
@@ -147,31 +149,30 @@ class GuildMessageListener(
         if (event.userId == event.jda.selfUser.id)
             return
 
-        if (event.reactionEmote.isEmoji) {
-            val emoji = event.reactionEmote.asCodepoints
-            val getGuild = springGuildService.getGuild(event.guild.id)
-            if (getGuild is Failure) {
-                logger.error("onMessageReactionRemove: ${getGuild.reason}")
+        val emoji = event.emoji
+        val getGuild = springGuildService.getGuild(event.guild.id)
+        if (getGuild is Failure) {
+            logger.error("onMessageReactionRemove: ${getGuild.reason}")
+            return
+        }
+        val guild = (getGuild as Success).value
+
+        if (guild.memeChannels.contains(event.channel.id)) {
+
+            if (event.userId == getAuthorIdFromMessageId(event.reaction.textChannel, event.messageId))
                 return
+
+            //Thumbs up
+            if (emoji == EmojiCodes.ThumbsUp) {
+                memeService.removeUpvote(guild.guildId, event.messageId, event.userId)
             }
-            val guild = (getGuild as Success).value
+            //Thumbs down
+            else if (emoji == EmojiCodes.ThumbsDown) {
+                memeService.removeDownvote(guild.guildId, event.messageId, event.userId)
 
-            if (guild.memeChannels.contains(event.channel.id)) {
-
-                if (event.userId == getAuthorIdFromMessageId(event.reaction.textChannel, event.messageId))
-                    return
-
-                //Thumbs up
-                if (emoji == EmojiCodes.ThumbsUp) {
-                    memeService.removeUpvote(guild.guildId, event.messageId, event.userId)
-                }
-                //Thumbs down
-                else if (emoji == EmojiCodes.ThumbsDown) {
-                    memeService.removeDownvote(guild.guildId, event.messageId, event.userId)
-
-                }
             }
         }
+
     }
 
     override fun onMessageDelete(event: MessageDeleteEvent) {
@@ -188,7 +189,7 @@ class GuildMessageListener(
         }
     }
 
-    override fun onSlashCommand(event: SlashCommandEvent) {
+    override fun onSlashCommandInteraction(event: SlashCommandInteractionEvent) {
         val messageEvent = event.toMessageEvent()
         try {
             commandFactory.getCommand(event.name).execute(messageEvent)
@@ -201,7 +202,9 @@ class GuildMessageListener(
         }
     }
 
-    override fun onGuildMessageReceived(event: GuildMessageReceivedEvent) {
+    override fun onMessageReceived(event: MessageReceivedEvent) {
+
+        if (event.channelType != ChannelType.TEXT && event.channelType != ChannelType.GUILD_PUBLIC_THREAD) return
 
         val author = event.author
         val message = event.message
@@ -228,12 +231,12 @@ class GuildMessageListener(
 
         val isDeafened = deafenedChannels.contains(event.channel.id)
 
-        if (!isDeafened && event.message.isMentioned(event.jda.selfUser, Message.MentionType.USER)) {
-            val emotesByName = guild.getEmotesByName("piing", true)
+        if (!isDeafened && event.message.mentions.isMentioned(event.jda.selfUser, Message.MentionType.USER)) {
+            val emotesByName = guild.getEmojisByName("piing", true)
             if (emotesByName.size >= 1)
                 message.addReaction(emotesByName[0]).queue()
             else
-                message.addReaction("U+1F621").queue()
+                message.addReaction(Emoji.fromUnicode("U+1F621")).queue()
         }
 
         when {
@@ -344,7 +347,7 @@ class GuildMessageListener(
         }
     }
 
-    private fun runAdminCommand(event: GuildMessageReceivedEvent) {
+    private fun runAdminCommand(event: MessageReceivedEvent) {
 
         if (event.author.id == event.jda.selfUser.id || event.author.isBot) {
             logger.info("Not running command as author is me or a bot")

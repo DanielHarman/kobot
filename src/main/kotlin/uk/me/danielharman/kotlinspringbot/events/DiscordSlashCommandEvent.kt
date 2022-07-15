@@ -1,15 +1,14 @@
 package uk.me.danielharman.kotlinspringbot.events
 
-import net.dv8tion.jda.api.MessageBuilder
 import net.dv8tion.jda.api.entities.MessageEmbed
-import net.dv8tion.jda.api.events.interaction.SlashCommandEvent
+import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent
 import net.dv8tion.jda.api.exceptions.ErrorResponseException
 import net.dv8tion.jda.api.interactions.commands.OptionType
 import uk.me.danielharman.kotlinspringbot.helpers.Embeds
 import uk.me.danielharman.kotlinspringbot.models.CommandParameter
 import java.io.InputStream
 
-class DiscordSlashCommandEvent(private val event: SlashCommandEvent) : DiscordMessageEvent(
+class DiscordSlashCommandEvent(private val event: SlashCommandInteractionEvent) : DiscordMessageEvent(
     event.options.fold("") { acc, opt -> "$acc ${opt.asString}" },
     event.channel,
     event.user,

@@ -1,21 +1,21 @@
 package uk.me.danielharman.kotlinspringbot.events
 
 import net.dv8tion.jda.api.entities.MessageEmbed
-import net.dv8tion.jda.api.events.message.guild.GuildMessageReceivedEvent
+import net.dv8tion.jda.api.events.message.MessageReceivedEvent
 import net.dv8tion.jda.api.exceptions.ErrorResponseException
 import uk.me.danielharman.kotlinspringbot.helpers.Embeds
 import uk.me.danielharman.kotlinspringbot.models.CommandParameter
 import java.io.InputStream
 
 class DiscordChannelMessageEvent(
-    event: GuildMessageReceivedEvent
+    event: MessageReceivedEvent
 ) : DiscordMessageEvent(
     event.message.contentStripped,
     event.channel,
     event.message.author,
     event.guild,
     event.message.attachments,
-    event.message.mentionedUsers
+    event.message.mentions.users
 ) {
     override fun reply(embed: MessageEmbed, invokerOnly: Boolean) {
         this.channel.sendMessageEmbeds(embed).queue()

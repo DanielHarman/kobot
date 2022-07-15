@@ -7,6 +7,7 @@ import net.dv8tion.jda.api.hooks.ListenerAdapter
 import net.dv8tion.jda.api.interactions.commands.OptionType
 import net.dv8tion.jda.api.interactions.commands.build.CommandData
 import net.dv8tion.jda.api.requests.GatewayIntent
+import net.dv8tion.jda.internal.interactions.CommandDataImpl
 import org.joda.time.DateTime
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
@@ -42,10 +43,10 @@ object DiscordObject {
             GatewayIntent.DIRECT_MESSAGES,
             GatewayIntent.GUILD_MESSAGES,
             GatewayIntent.GUILD_VOICE_STATES,
-            GatewayIntent.GUILD_EMOJIS,
+            GatewayIntent.GUILD_EMOJIS_AND_STICKERS,
             GatewayIntent.GUILD_MESSAGE_REACTIONS
         )
-            .setActivity(Activity.of(Activity.ActivityType.DEFAULT, "${properties.commandPrefix}help"))
+            .setActivity(Activity.of(Activity.ActivityType.PLAYING, "${properties.commandPrefix}help"))
 
         for (listener: ListenerAdapter in listeners) {
             builder.addEventListeners(listener)
@@ -61,7 +62,7 @@ object DiscordObject {
 
             val commandData = mutableListOf<CommandData>()
             for (command: ISlashCommand in commands) {
-                val data = CommandData(command.commandString, command.description)
+                val data = CommandDataImpl(command.commandString, command.description)
 
                 for (commandParameter: CommandParameter in command.commandParameters) {
                     data.addOption(

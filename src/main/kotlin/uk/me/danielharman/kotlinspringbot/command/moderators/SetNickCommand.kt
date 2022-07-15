@@ -1,8 +1,9 @@
 package uk.me.danielharman.kotlinspringbot.command.moderators
 
-import net.dv8tion.jda.api.events.message.guild.GuildMessageReceivedEvent
+import net.dv8tion.jda.api.events.message.MessageReceivedEvent
 import org.springframework.stereotype.Component
 import uk.me.danielharman.kotlinspringbot.command.interfaces.IModeratorCommand
+import uk.me.danielharman.kotlinspringbot.helpers.Embeds
 
 @Component
 class SetNickCommand : IModeratorCommand {
@@ -13,20 +14,22 @@ class SetNickCommand : IModeratorCommand {
 
     override fun getCommandString(): String = commandString
 
-    override fun execute(event: GuildMessageReceivedEvent) {
+    override fun execute(event: MessageReceivedEvent) {
 
         val split = event.message.contentStripped.split('"')
 
-        val mentionedMembers = event.message.mentionedMembers
+        val mentionedMembers = event.message.mentions.users
 
-        for (member in mentionedMembers) {
-            try {
-                member.modifyNickname(split[1]).queue()
-                event.channel.sendMessage("Set member's nickname!").queue()
-            } catch (e: Exception) {
-                event.channel.sendMessage("Could not change ${member.nickname}'s nickname!").queue()
-            }
-        }
+        event.channel.sendMessageEmbeds(Embeds.createErrorEmbed("TODO"))
+
+//        for (member in mentionedMembers) {
+//            try {
+//                member.modifyNickname(split[1]).queue()
+//                event.channel.sendMessage("Set member's nickname!").queue()
+//            } catch (e: Exception) {
+//                event.channel.sendMessage("Could not change ${member.nickname}'s nickname!").queue()
+//            }
+//        }
     }
 
 }

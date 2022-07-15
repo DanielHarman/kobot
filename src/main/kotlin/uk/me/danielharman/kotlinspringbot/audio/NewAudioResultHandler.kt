@@ -4,6 +4,7 @@ import com.sedmelluq.discord.lavaplayer.player.AudioLoadResultHandler
 import com.sedmelluq.discord.lavaplayer.tools.FriendlyException
 import com.sedmelluq.discord.lavaplayer.track.AudioPlaylist
 import com.sedmelluq.discord.lavaplayer.track.AudioTrack
+import net.dv8tion.jda.api.entities.AudioChannel
 import net.dv8tion.jda.api.entities.Guild
 import net.dv8tion.jda.api.entities.VoiceChannel
 import net.dv8tion.jda.api.exceptions.InsufficientPermissionException
@@ -18,7 +19,7 @@ import uk.me.danielharman.kotlinspringbot.services.SpringGuildService
 
 //TODO re-write because dumb things because java inline class overrides
 class NewAudioResultHandler(
-    private val voiceChannel: VoiceChannel?, private val musicManager: GuildMusicManager,
+    private val voiceChannel: AudioChannel?, private val musicManager: GuildMusicManager,
     private val event: DiscordMessageEvent, private val springGuildService: SpringGuildService, private val guild: Guild
 ) : AudioLoadResultHandler {
 
@@ -55,7 +56,7 @@ class NewAudioResultHandler(
 
         musicManager.registerCallback (track.identifier, partialWrapper(::onErrorEvent, event))
 
-        if (!guild.audioManager.isConnected && !guild.audioManager.isAttemptingToConnect) {
+        if (!guild.audioManager.isConnected) {
             try {
                 guild.audioManager.openAudioConnection(voiceChannel)
             } catch (e: InsufficientPermissionException) {

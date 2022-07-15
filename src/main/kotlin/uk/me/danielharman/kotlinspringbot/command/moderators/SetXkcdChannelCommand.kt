@@ -1,6 +1,6 @@
 package uk.me.danielharman.kotlinspringbot.command.moderators
 
-import net.dv8tion.jda.api.events.message.guild.GuildMessageReceivedEvent
+import net.dv8tion.jda.api.events.message.MessageReceivedEvent
 import org.springframework.stereotype.Component
 import uk.me.danielharman.kotlinspringbot.command.interfaces.IModeratorCommand
 import uk.me.danielharman.kotlinspringbot.services.SpringGuildService
@@ -14,7 +14,7 @@ class SetXkcdChannelCommand(private val springGuildService: SpringGuildService) 
 
     override fun getCommandString(): String = commandString
 
-    override fun execute(event: GuildMessageReceivedEvent) {
+    override fun execute(event: MessageReceivedEvent) {
         springGuildService.setXkcdChannel(event.guild.id, event.channel.id)
         event.channel.sendMessage("Set as xkcd channel").queue()
     }

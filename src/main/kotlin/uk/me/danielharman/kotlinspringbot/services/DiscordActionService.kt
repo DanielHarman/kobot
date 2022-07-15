@@ -1,5 +1,6 @@
 package uk.me.danielharman.kotlinspringbot.services
 
+import net.dv8tion.jda.api.entities.AudioChannel
 import net.dv8tion.jda.api.entities.Guild
 import net.dv8tion.jda.api.entities.GuildChannel
 import net.dv8tion.jda.api.entities.User
@@ -52,7 +53,7 @@ class DiscordActionService {
         return Success(guild)
     }
 
-    fun getBotVoiceChannel(guildId: String): OperationResult<VoiceChannel, String> {
+    fun getBotVoiceChannel(guildId: String): OperationResult<AudioChannel, String> {
         return when (val guild = getGuild(guildId)) {
             is Failure -> Failure(guild.reason)
             is Success -> {
