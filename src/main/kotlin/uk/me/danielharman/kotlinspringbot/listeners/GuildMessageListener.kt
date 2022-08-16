@@ -1,8 +1,5 @@
 package uk.me.danielharman.kotlinspringbot.listeners
 
-import com.sedmelluq.discord.lavaplayer.player.AudioPlayerManager
-import com.sedmelluq.discord.lavaplayer.player.DefaultAudioPlayerManager
-import com.sedmelluq.discord.lavaplayer.source.AudioSourceManagers
 import net.dv8tion.jda.api.entities.Member
 import net.dv8tion.jda.api.entities.Message
 import net.dv8tion.jda.api.events.guild.GuildJoinEvent
@@ -18,20 +15,20 @@ import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Component
 import uk.me.danielharman.kotlinspringbot.KotlinBotProperties
-import uk.me.danielharman.kotlinspringbot.helpers.EmojiCodes
-import uk.me.danielharman.kotlinspringbot.helpers.JDAHelperFunctions.getAuthorIdFromMessageId
-import uk.me.danielharman.kotlinspringbot.models.Meme
-import uk.me.danielharman.kotlinspringbot.factories.ModeratorCommandFactory
+import uk.me.danielharman.kotlinspringbot.events.DiscordMessageEvent
 import uk.me.danielharman.kotlinspringbot.factories.CommandFactory
+import uk.me.danielharman.kotlinspringbot.factories.ModeratorCommandFactory
+import uk.me.danielharman.kotlinspringbot.helpers.EmojiCodes
 import uk.me.danielharman.kotlinspringbot.helpers.Failure
+import uk.me.danielharman.kotlinspringbot.helpers.JDAHelperFunctions.getAuthorIdFromMessageId
 import uk.me.danielharman.kotlinspringbot.helpers.Success
 import uk.me.danielharman.kotlinspringbot.mappers.toMessageEvent
-import uk.me.danielharman.kotlinspringbot.events.DiscordMessageEvent
 import uk.me.danielharman.kotlinspringbot.models.ChatAction
 import uk.me.danielharman.kotlinspringbot.services.ChatActionService
+import uk.me.danielharman.kotlinspringbot.models.Meme
 import uk.me.danielharman.kotlinspringbot.services.DiscordActionService
-import uk.me.danielharman.kotlinspringbot.services.SpringGuildService
 import uk.me.danielharman.kotlinspringbot.services.MemeService
+import uk.me.danielharman.kotlinspringbot.services.SpringGuildService
 import java.util.*
 import java.util.regex.Pattern
 
@@ -46,23 +43,22 @@ class GuildMessageListener(
     private val chatActionService: ChatActionService
 ) : ListenerAdapter() {
 
-    private val playerManager: AudioPlayerManager = DefaultAudioPlayerManager()
     private val logger: Logger = LoggerFactory.getLogger(this::class.java)
-
-    init {
-        AudioSourceManagers.registerRemoteSources(playerManager)
-        AudioSourceManagers.registerLocalSource(playerManager)
-    }
 
     //Leave a voice channel once everyone has left
     override fun onGuildVoiceLeave(event: GuildVoiceLeaveEvent) {
-        val vc = event.oldValue
-        //Return if the event is triggered by the bot or by someone leaving a channel in a guild we don't have a audio manager for
-        if (event.member.id == event.jda.selfUser.id || vc.jda.audioManagers.firstOrNull { vc.guild.id == event.guild.id } == null) return
-        val members = vc.members
+        val voiceChannel = event.oldValue
+
+        //Return if the event is triggered by the bot or by someone leaving a channel in a guild we don't have an audio manager for
+        val audioManager = voiceChannel.jda.audioManagers.firstOrNull { am -> am.guild.id == voiceChannel.guild.id }
+
+        if (event.member.id == event.jda.selfUser.id || audioManager == null) return
+
+
+        val members = voiceChannel.members
         //If the channel is just us bots
-        if ((members.firstOrNull { m -> !m.user.isBot } == null) && members.firstOrNull { m -> m.id == vc.jda.selfUser.id } != null) {
-            vc.jda.audioManagers.firstOrNull { vc.guild.id == event.guild.id }?.closeAudioConnection()
+        if ((members.firstOrNull { m -> !m.user.isBot } == null) && members.firstOrNull { m -> m.id == voiceChannel.jda.selfUser.id } != null) {
+            audioManager.closeAudioConnection()
         }
     }
 
@@ -306,7 +302,6 @@ class GuildMessageListener(
         if (message.attachments.isNotEmpty()) {
             message.addReaction(EmojiCodes.ThumbsUp).queue()
             message.addReaction(EmojiCodes.ThumbsDown).queue()
-            message.addReaction(EmojiCodes.Cross).queue()
             memeService.saveMeme(
                 Meme(
                     message.id,
@@ -320,7 +315,6 @@ class GuildMessageListener(
         } else if (force) {
             message.addReaction(EmojiCodes.ThumbsUp).queue()
             message.addReaction(EmojiCodes.ThumbsDown).queue()
-            message.addReaction(EmojiCodes.Cross).queue()
             memeService.saveMeme(Meme(message.id, guildId, authorId, message.jumpUrl, channelId, Meme.UrlType.Link))
         } else {
             var url: String? = null
